@@ -1,0 +1,1 @@
+ampctl is cli tool written in go to handle your amp (Apache MySQL PHP) stack

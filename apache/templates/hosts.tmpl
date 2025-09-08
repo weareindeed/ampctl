@@ -1,0 +1,33 @@
+<VirtualHost *:{{.Port}}>
+  KeepAlive Off
+  ServerName {{.Host}}
+  DocumentRoot "{{.Path}}"
+  SetEnvIfNoCase ^Authorization$ "(.+)" HTTP_AUTHORIZATION=$1
+
+  <FilesMatch \.php$>
+	  SetHandler proxy:unix:/opt/local/var/run/php{{.PhpVersion}}/php-fpm.sock|fcgi://dummy
+  </FilesMatch>
+
+  {{ if .Ssl }}
+	RewriteEngine On
+	RewriteCond %{HTTPS} off
+	RewriteRule (.*) https://%{SERVER_NAME}$1 [R,L]
+  {{ end }}
+</VirtualHost>
+
+{{ if .Ssl }}
+<VirtualHost *:{{.SslPort}}>
+  KeepAlive Off
+  ServerName {{.Host}}
+  DocumentRoot "{{.Path}}"
+  SetEnvIfNoCase ^Authorization$ "(.+)" HTTP_AUTHORIZATION=$1
+
+  <FilesMatch \.php$>
+	  SetHandler proxy:unix:/opt/local/var/run/php{{.PhpVersion}}/php-fpm.sock|fcgi://dummy
+  </FilesMatch>
+
+  SSLEngine On
+  SSLCertificateFile /opt/local/var/ssl/{{.Host}}.pem
+  SSLCertificateKeyFile /opt/local/var/ssl/{{.Host}}.key
+</VirtualHost>
+{{ end }}

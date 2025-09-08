@@ -1,0 +1,10 @@
+Timeout 600
+
+<Directory '{{ .Workspace }}'>
+	Options -Indexes +FollowSymLinks
+	AllowOverride all
+	Order allow,deny
+	Allow from all
+	Require all granted
+	DirectoryIndex index.php index.html
+</Directory>
