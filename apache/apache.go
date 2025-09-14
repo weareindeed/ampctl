@@ -73,6 +73,41 @@ func WriteConfig(filepath string, config config.Apache) error {
 	return nil
 }
 
-func LoadModule(name string) {
+func LoadModule(filepath string, name string) {
 
+}
+
+func SetConfig(filepath string, name string, value string) error {
+	// Read file
+	content, err := os.ReadFile(filepath)
+	if err != nil {
+		return err
+	}
+
+	lines := bytes.Split(content, []byte("\n"))
+	found := false
+	directive := []byte(name)
+
+	for i, line := range lines {
+		trimmed := bytes.TrimSpace(line)
+		if bytes.HasPrefix(trimmed, directive) {
+			// Replace existing directive with new value
+			lines[i] = []byte(fmt.Sprintf("%s %s", name, value))
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		// Append directive if not found
+		lines = append(lines, []byte(fmt.Sprintf("%s %s", name, value)))
+	}
+
+	// Write file back
+	err = os.WriteFile(filepath, bytes.Join(lines, []byte("\n")), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

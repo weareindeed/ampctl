@@ -1,6 +1,7 @@
 package brew
 
 import (
+	"ampctl/util"
 	"fmt"
 	"os"
 	"os/exec"
@@ -19,7 +20,7 @@ func CheckPath() (string, bool) {
 
 // IsPackageInstalled checks if a Homebrew package is installed.
 func IsPackageInstalled(pkg string) bool {
-	cmd := exec.Command("brew", "list", "--formula", pkg)
+	cmd := util.NotSudoCommand("brew", "list", "--formula", pkg)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		// If `brew list` fails, the package is likely not installed
@@ -40,7 +41,7 @@ func InstallPackage(pkg string) error {
 	if IsPackageInstalled(pkg) {
 		return nil
 	}
-	cmd := exec.Command("brew", "install", pkg)
+	cmd := util.NotSudoCommand("brew", "install", pkg)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -49,7 +50,7 @@ func InstallPackage(pkg string) error {
 
 // AddTap adds a Homebrew tap.
 func AddTap(tap string) error {
-	cmd := exec.Command("brew", "tap", tap)
+	cmd := util.NotSudoCommand("brew", "tap", tap)
 	_, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func AddTap(tap string) error {
 
 // IsTapInstalled checks if a Homebrew tap is installed.
 func IsTapInstalled(tap string) bool {
-	cmd := exec.Command("brew", "tap")
+	cmd := util.NotSudoCommand("brew", "tap")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error:", err)

@@ -4,6 +4,7 @@ import (
 	"ampctl/apache"
 	"ampctl/brew"
 	"ampctl/config"
+	"ampctl/hosts"
 	"fmt"
 	"sort"
 )
@@ -24,6 +25,10 @@ func ProvisionCommand() {
 		return
 	}
 
+	if !ProvisionHosts(cfg) {
+		return
+	}
+
 	if !ProvisionShivammathur() {
 		return
 	}
@@ -37,6 +42,8 @@ func ProvisionCommand() {
 			return
 		}
 	}
+	ProvisionHosts(cfg)
+
 }
 
 func ProvisionHomebrew() bool {
@@ -137,5 +144,15 @@ func ProvisionApacheConfig(config *config.Config) bool {
 		return false
 	}
 
+	return true
+}
+
+func ProvisionHosts(config *config.Config) bool {
+	fmt.Println("Write hosts")
+	err := hosts.WriteHosts(config.Hosts)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
 	return true
 }

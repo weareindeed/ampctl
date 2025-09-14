@@ -2,9 +2,14 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
+	"os/user"
 	"regexp"
+	"strconv"
 	"strings"
+	"syscall"
 )
 
 // BlockInFile inserts or updates a block of text in a file.
@@ -69,4 +74,32 @@ func LineInFile(path string, regexpPattern string, line string) error {
 		result += "\n"
 	}
 	return os.WriteFile(path, []byte(result), 0644)
+}
+
+func NotSudoCommand(name string, arg ...string) *exec.Cmd {
+	sudoUser := os.Getenv("SUDO_USER")
+	if sudoUser == "" {
+		cmd := exec.Command(name, arg...)
+		return cmd
+	}
+
+	u, err := user.Lookup(sudoUser)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	uid, _ := strconv.Atoi(u.Uid)
+	gid, _ := strconv.Atoi(u.Gid)
+
+	// Prepare command
+	cmd := exec.Command(name, arg...)
+
+	// Run as specific user
+	cmd.SysProcAttr = &syscall.SysProcAttr{}
+	cmd.SysProcAttr.Credential = &syscall.Credential{
+		Uid: uint32(uid),
+		Gid: uint32(gid),
+	}
+
+	return cmd
 }
