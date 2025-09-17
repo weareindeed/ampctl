@@ -50,36 +50,6 @@ func (c *Config) ImportFile(path string) error {
 	return nil
 }
 
-// ImportHostsFileFromHomeDir reads the hosts from path . ~/.ampctl/hosts.yaml
-func (c *Config) ImportHostsFileFromHomeDir() error {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to get home directory: %w", err)
-	}
-
-	hostsFile := filepath.Join(homeDir, ".ampctl", "hosts.yaml")
-	_, statErr := os.Stat(hostsFile)
-	if os.IsNotExist(statErr) {
-		// Try to create the file (and parent dir if needed)
-		if err := os.MkdirAll(filepath.Dir(hostsFile), 0755); err != nil {
-			return fmt.Errorf("failed to create directory for hosts file: %w", err)
-		}
-		file, err := os.Create(hostsFile)
-		if err != nil {
-			return fmt.Errorf("failed to create hosts file: %w", err)
-		}
-		err = file.Close()
-		if err != nil {
-			return err
-		}
-	}
-	if err := c.ImportFile(hostsFile); err != nil {
-		return fmt.Errorf("failed to load hosts file: %w", err)
-	}
-
-	return nil
-}
-
 // ImportConfigFileFromHomeDir reads the hosts from path . ~/.ampctl/hosts.yaml
 func (c *Config) ImportConfigFileFromHomeDir() error {
 	homeDir, err := os.UserHomeDir()
@@ -107,5 +77,13 @@ func (c *Config) ImportConfigFileFromHomeDir() error {
 		return fmt.Errorf("failed to load hosts file: %w", err)
 	}
 
+	return nil
+}
+
+func (c *Config) LoadConfig() error {
+	err := c.ImportConfigFileFromHomeDir()
+	if err != nil {
+		return err
+	}
 	return nil
 }

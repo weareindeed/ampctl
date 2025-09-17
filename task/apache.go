@@ -1,4 +1,4 @@
-package apache
+package task
 
 import (
 	"ampctl/config"
@@ -10,11 +10,49 @@ import (
 	"text/template"
 )
 
+type ApacheInstallTask struct {
+}
+
+func (t *ApacheInstallTask) Run() error {
+	fmt.Print("Check if apache is installed: ")
+	if !util.IsPackageInstalled("httpd") {
+		fmt.Println("Not installed yet, so we install it")
+		err := util.InstallPackage("httpd")
+		if err != nil {
+			return fmt.Errorf("Error installing apache (httpd)")
+		}
+	} else {
+		fmt.Println("Already installed")
+	}
+	return nil
+}
+
+type ApacheConfigWriteTask struct {
+	Config *config.Config
+}
+
+func (t *ApacheConfigWriteTask) Run() error {
+	fmt.Println("Write apache config")
+	file := fmt.Sprintf("/opt/homebrew/etc/httpd/httpd.conf")
+	err := writeApacheHosts(file, t.Config.Hosts, t.Config.Apache)
+	if err != nil {
+		return fmt.Errorf("Error installing apache (httpd)")
+	}
+
+	file = fmt.Sprintf("/opt/homebrew/etc/httpd/extra/ampctl-hosts.conf")
+	err = writeApacheHosts(file, t.Config.Hosts, t.Config.Apache)
+	if err != nil {
+		return fmt.Errorf("Error installing apache (httpd)")
+	}
+
+	return nil
+}
+
 //go:embed templates/*
 var templatesFS embed.FS
 
-func WriteHosts(filepath string, hosts []config.Host, apache config.Apache) error {
-	tmpl, err := template.ParseFS(templatesFS, "templates/hosts.tmpl")
+func writeApacheHosts(filepath string, hosts []config.Host, apache config.Apache) error {
+	tmpl, err := template.ParseFS(templatesFS, "templates/apache/hosts.tmpl")
 	if err != nil {
 		panic(err)
 	}
@@ -45,10 +83,10 @@ func WriteHosts(filepath string, hosts []config.Host, apache config.Apache) erro
 	return nil
 }
 
-func WriteConfig(filepath string, config config.Apache) error {
+func writeConfig(filepath string, config config.Apache) error {
 	file := fmt.Sprintf(filepath)
 
-	tmpl, err := template.ParseFS(templatesFS, "templates/httpd-config.tmpl")
+	tmpl, err := template.ParseFS(templatesFS, "templates/apache/httpd-config.tmpl")
 	if err != nil {
 		panic(err)
 	}
@@ -73,11 +111,11 @@ func WriteConfig(filepath string, config config.Apache) error {
 	return nil
 }
 
-func LoadModule(filepath string, name string) {
+func loadModule(filepath string, name string) {
 
 }
 
-func SetConfig(filepath string, name string, value string) error {
+func setConfig(filepath string, name string, value string) error {
 	// Read file
 	content, err := os.ReadFile(filepath)
 	if err != nil {

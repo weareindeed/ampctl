@@ -2,21 +2,41 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"os/exec"
 
 	"github.com/spf13/cobra"
 )
 
 func main() {
+	var container = NewContainer()
+
+	if len(os.Args) > 1 && os.Args[1] == "--run-task" {
+		err := container.GetConfig().ImportFile(os.Args[3])
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		runTask(container, os.Args[2])
+		return
+	}
+
+	if os.Geteuid() == 0 {
+		fmt.Println("Don't run ampctl as root")
+		return
+	}
+
+	err := container.GetConfig().LoadConfig()
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	var rootCmd = &cobra.Command{Use: "ampctl"}
 
 	var checkCmd = &cobra.Command{
 		Use:   "check",
 		Short: "Check settings",
 		Run: func(cmd *cobra.Command, args []string) {
-			CheckCommand()
+			CheckCommand(container)
 		},
 	}
 
@@ -24,7 +44,7 @@ func main() {
 		Use:   "provision",
 		Short: "Run provision",
 		Run: func(cmd *cobra.Command, args []string) {
-			ProvisionCommand()
+			ProvisionCommand(container)
 		},
 	}
 
@@ -33,36 +53,15 @@ func main() {
 		provisionCmd,
 	)
 
-	err := rootCmd.Execute()
+	err = rootCmd.Execute()
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func run() {
-	// Check if we are already running as sudo
-	if os.Geteuid() == 0 {
-		fmt.Println("Already running as root!")
-		return
-	}
-
-	// get current binary path
-	exe, err := os.Executable()
+func runTask(container *Container, taskName string) {
+	err := container.GetTask(taskName).Run()
 	if err != nil {
-		log.Fatalf("Error determining executable path: %v", err)
-	}
-
-	// inherit arguments of current process
-	args := os.Args[1:]
-	cmdArgs := append([]string{exe}, args...)
-
-	// start new process with sudo
-	cmd := exec.Command("sudo", cmdArgs...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("Error starting with sudo: %v", err)
+		fmt.Println(err)
 	}
 }

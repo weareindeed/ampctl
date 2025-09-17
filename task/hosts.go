@@ -1,12 +1,26 @@
-package hosts
+package task
 
 import (
 	"ampctl/config"
 	"ampctl/util"
+	"fmt"
 	"strings"
 )
 
-func WriteHosts(hosts []config.Host) error {
+type HostsWriteTask struct {
+	Config *config.Config
+}
+
+func (t *HostsWriteTask) Run() error {
+	fmt.Println("Write hosts")
+	err := writeHosts(t.Config.Hosts)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func writeHosts(hosts []config.Host) error {
 	var sb strings.Builder
 
 	for _, host := range hosts {
