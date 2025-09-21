@@ -20,7 +20,7 @@ func (c *Container) GetConfig() *config.Config {
 		return service.(*config.Config)
 	}
 
-	instance := &config.Config{}
+	instance := config.NewConfig()
 	c.services["GetConfig"] = instance
 	return instance
 }
@@ -33,6 +33,12 @@ func (c *Container) GetTask(name string) task.Task {
 		return c.GetApacheInstallTask()
 	case "apache:config:write":
 		return c.GetApacheConfigWriteTask()
+	case "apache:start":
+		return c.GetApacheStartTask()
+	case "apache:restart":
+		return c.GetApacheRestartTask()
+	case "apache:stop":
+		return c.GetApacheStopTask()
 	case "hosts:write":
 		return c.GetHostsWriteTask()
 	case "php:install":
@@ -101,5 +107,35 @@ func (c *Container) GetRootPrivilegeTask() *task.RootPrivilegeTask {
 
 	instance := &task.RootPrivilegeTask{}
 	c.services["GetRootPrivilegeTask"] = instance
+	return instance
+}
+
+func (c *Container) GetApacheStartTask() *task.ApacheStartTask {
+	if service, ok := c.services["GetApacheStartTask"]; ok {
+		return service.(*task.ApacheStartTask)
+	}
+
+	instance := &task.ApacheStartTask{}
+	c.services["GetApacheStartTask"] = instance
+	return instance
+}
+
+func (c *Container) GetApacheRestartTask() *task.ApacheRestartTask {
+	if service, ok := c.services["GetApacheRestartTask"]; ok {
+		return service.(*task.ApacheRestartTask)
+	}
+
+	instance := &task.ApacheRestartTask{}
+	c.services["GetApacheRestartTask"] = instance
+	return instance
+}
+
+func (c *Container) GetApacheStopTask() *task.ApacheStopTask {
+	if service, ok := c.services["GetApacheStopTask"]; ok {
+		return service.(*task.ApacheStopTask)
+	}
+
+	instance := &task.ApacheStopTask{}
+	c.services["GetApacheStopTask"] = instance
 	return instance
 }

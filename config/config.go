@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
@@ -22,8 +23,31 @@ type Php struct {
 	Versions  map[string]PhpVersion `yaml:"versions"`
 }
 
+func newPhp() Php {
+	return Php{}
+}
+
 type Apache struct {
-	Workspace string `yaml:"workspace"`
+	Workspace             string `yaml:"workspace"`
+	HttpPort              string `yaml:"http_port"`
+	HttpsPort             string `yaml:"https_port"`
+	SslCertificateFile    string `yaml:"ssl_certificate_file"`
+	SslCertificateKeyFile string `yaml:"ssl_certificate_key_file"`
+}
+
+func newApache() Apache {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err) // or handle error properly
+	}
+
+	return Apache{
+		Workspace:             "/var/www",
+		HttpPort:              "80",
+		HttpsPort:             "443",
+		SslCertificateFile:    path.Join(home, ".ampctl/cert.crt"),
+		SslCertificateKeyFile: path.Join(home, ".ampctl/cert.key"),
+	}
 }
 
 type PhpVersion struct {
@@ -34,6 +58,14 @@ type Config struct {
 	Hosts  []Host `yaml:"hosts"`
 	Php    Php    `yaml:"php"`
 	Apache Apache `yaml:"apache"`
+}
+
+func NewConfig() *Config {
+	return &Config{
+		Hosts:  []Host{},
+		Php:    newPhp(),
+		Apache: newApache(),
+	}
 }
 
 // ImportFile reads the hosts file from the given path

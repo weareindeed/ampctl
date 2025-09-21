@@ -11,6 +11,7 @@ func ProvisionCommand(container *Container) {
 	RunTask("brew:shivammathur:install", container.GetConfig())
 	RunTask("apache:install", container.GetConfig())
 	RunTask("apache:config:write", container.GetConfig())
+	RunTask("apache:restart", container.GetConfig())
 	RunTask("php:install", container.GetConfig())
 	RunTaskAsRoot("hosts:write", container.GetConfig())
 }

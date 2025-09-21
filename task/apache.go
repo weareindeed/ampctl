@@ -24,6 +24,7 @@ func (t *ApacheInstallTask) Run() error {
 	} else {
 		fmt.Println("Already installed")
 	}
+
 	return nil
 }
 
@@ -34,18 +35,46 @@ type ApacheConfigWriteTask struct {
 func (t *ApacheConfigWriteTask) Run() error {
 	fmt.Println("Write apache config")
 	file := fmt.Sprintf("/opt/homebrew/etc/httpd/httpd.conf")
-	err := writeApacheHosts(file, t.Config.Hosts, t.Config.Apache)
+	err := writeConfig(file, t.Config.Apache)
 	if err != nil {
 		return fmt.Errorf("Error installing apache (httpd)")
 	}
 
-	file = fmt.Sprintf("/opt/homebrew/etc/httpd/extra/ampctl-hosts.conf")
+	file = fmt.Sprintf("/opt/homebrew/etc/httpd/extra/httpd-ssl.conf")
+	err = writeSslConfig(file, t.Config.Apache)
+	if err != nil {
+		return fmt.Errorf("Error writing httpd-ssl.conf")
+	}
+
+	fmt.Println("Write apache hosts")
+	file = fmt.Sprintf("/opt/homebrew/etc/httpd/extra/httpd-vhosts.conf")
 	err = writeApacheHosts(file, t.Config.Hosts, t.Config.Apache)
 	if err != nil {
-		return fmt.Errorf("Error installing apache (httpd)")
+		return fmt.Errorf("Error writing httpd-vhosts.conf")
 	}
 
 	return nil
+}
+
+type ApacheStartTask struct {
+}
+
+func (t *ApacheStartTask) Run() error {
+	return util.BrewStartService("httpd")
+}
+
+type ApacheRestartTask struct {
+}
+
+func (t *ApacheRestartTask) Run() error {
+	return util.BrewRestartService("httpd")
+}
+
+type ApacheStopTask struct {
+}
+
+func (t *ApacheStopTask) Run() error {
+	return util.BrewStopService("httpd")
 }
 
 //go:embed templates/*
@@ -61,8 +90,8 @@ func writeApacheHosts(filepath string, hosts []config.Host, apache config.Apache
 
 	for _, host := range hosts {
 		data := map[string]any{
-			"Port":       80,
-			"SslPort":    443,
+			"Port":       apache.HttpPort,
+			"SslPort":    apache.HttpsPort,
 			"Host":       host.Host,
 			"Path":       host.Path,
 			"Ssl":        host.Ssl,
@@ -84,8 +113,6 @@ func writeApacheHosts(filepath string, hosts []config.Host, apache config.Apache
 }
 
 func writeConfig(filepath string, config config.Apache) error {
-	file := fmt.Sprintf(filepath)
-
 	tmpl, err := template.ParseFS(templatesFS, "templates/apache/httpd-config.tmpl")
 	if err != nil {
 		panic(err)
@@ -98,24 +125,101 @@ func writeConfig(filepath string, config config.Apache) error {
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, data)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
-	err = util.BlockInFile(file, buf.String())
+	err = util.BlockInFile(filepath, buf.String())
 	if err != nil {
-		fmt.Println(err)
+		return err
+	}
+
+	err = setApacheConfig(filepath, "Listen", "8080")
+	if err != nil {
+		return err
+	}
+
+	err = loadApacheModule(filepath, "rewrite_module", "lib/httpd/modules/mod_rewrite.so")
+	if err != nil {
+		return err
+	}
+
+	err = loadApacheModule(filepath, "proxy_module", "lib/httpd/modules/mod_proxy.so")
+	if err != nil {
+		return err
+	}
+
+	err = loadApacheModule(filepath, "ssl_module", "lib/httpd/modules/mod_ssl.so")
+	if err != nil {
+		return err
+	}
+
+	err = includeApacheConfig(filepath, "/opt/homebrew/etc/httpd/extra/httpd-vhosts.conf")
+	if err != nil {
+		return err
+	}
+
+	err = includeApacheConfig(filepath, "/opt/homebrew/etc/httpd/extra/httpd-ssl.conf")
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func loadModule(filepath string, name string) {
+func writeSslConfig(filepath string, apache config.Apache) error {
+	tmpl, err := template.ParseFS(templatesFS, "templates/apache/httpd-ssl.tmpl")
+	if err != nil {
+		panic(err)
+	}
 
+	buf := new(bytes.Buffer)
+
+	data := map[string]any{
+		"SslPort":               apache.HttpsPort,
+		"SslCertificateFile":    apache.SslCertificateFile,
+		"SslCertificateKeyFile": apache.SslCertificateKeyFile,
+	}
+
+	err = tmpl.Execute(buf, data)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(filepath, buf.Bytes(), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func setConfig(filepath string, name string, value string) error {
+func loadApacheModule(filepath string, name string, modulePath string) error {
+	directive := fmt.Sprintf("LoadModule %s %s", name, modulePath)
+
+	pattern := fmt.Sprintf(`^#?LoadModule\s+%s`, name)
+
+	err := util.LineInFile(filepath, pattern, directive)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func includeApacheConfig(filepath string, configPath string) error {
+	file := fmt.Sprintf("Include %s", configPath)
+
+	pattern := fmt.Sprintf(`^#?Include\s+%s`, configPath)
+
+	err := util.LineInFile(filepath, pattern, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setApacheConfig(filepath string, name string, value string) error {
 	// Read file
 	content, err := os.ReadFile(filepath)
 	if err != nil {

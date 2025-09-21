@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 // CheckPath checks if Homebrew is installed and returns its path.
@@ -19,19 +18,13 @@ func CheckPath() (string, bool) {
 
 // IsPackageInstalled checks if a Homebrew package is installed.
 func IsPackageInstalled(pkg string) bool {
-	cmd := NotSudoCommand("brew", "list", "--formula", pkg)
+	cmd := exec.Command("brew", "ls", "--versions", pkg)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		// If `brew list` fails, the package is likely not installed
 		return false
 	}
-
-	// remove path / tap
-	parts := strings.Split(pkg, "/")
-	pkg = parts[len(parts)-1]
-
-	// Sometimes brew lists other info, so check if the package name appears in output
-	return strings.Contains(string(output), pkg)
+	return len(output) > 0
 }
 
 // InstallPackage installs a Homebrew package if it is not already installed.
@@ -40,7 +33,7 @@ func InstallPackage(pkg string) error {
 	if IsPackageInstalled(pkg) {
 		return nil
 	}
-	cmd := NotSudoCommand("brew", "install", pkg)
+	cmd := exec.Command("brew", "install", pkg)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -49,7 +42,7 @@ func InstallPackage(pkg string) error {
 
 // AddTap adds a Homebrew tap.
 func AddTap(tap string) error {
-	cmd := NotSudoCommand("brew", "tap", tap)
+	cmd := exec.Command("brew", "tap", tap)
 	_, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
@@ -59,7 +52,7 @@ func AddTap(tap string) error {
 
 // IsTapInstalled checks if a Homebrew tap is installed.
 func IsTapInstalled(tap string) bool {
-	cmd := NotSudoCommand("brew", "tap")
+	cmd := exec.Command("brew", "tap")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -67,4 +60,25 @@ func IsTapInstalled(tap string) bool {
 	}
 	fmt.Println(string(output))
 	return true
+}
+
+func BrewStartService(formula string) error {
+	cmd := exec.Command("brew", "services", "start", formula)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func BrewStopService(formula string) error {
+	cmd := exec.Command("brew", "services", "stop", formula)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func BrewRestartService(formula string) error {
+	cmd := exec.Command("brew", "services", "restart", formula)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

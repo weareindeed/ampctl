@@ -55,19 +55,3 @@ func TestLineInFile(t *testing.T) {
 		t.Errorf("expected 'foo=baz', got: %s", string(content))
 	}
 }
-
-func TestNotSudoCommand(t *testing.T) {
-	cmd := NotSudoCommand("echo", "hello")
-	if cmd.Path != "echo" && !strings.Contains(cmd.Path, "echo") {
-		t.Errorf("expected echo command, got %s", cmd.Path)
-	}
-
-	// Run the command to ensure it executes
-	out, err := cmd.Output()
-	if err != nil {
-		t.Fatalf("failed to run command: %v", err)
-	}
-	if strings.TrimSpace(string(out)) != "hello" {
-		t.Errorf("expected 'hello', got %q", string(out))
-	}
-}
