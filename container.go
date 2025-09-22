@@ -27,6 +27,10 @@ func (c *Container) GetConfig() *config.Config {
 
 func (c *Container) GetTask(name string) task.Task {
 	switch name {
+	case "ssl:ca:generate":
+		return c.GetGenerateRootCaTask()
+	case "ssl:hosts:generate":
+		return c.GetGenerateHostsCaTask()
 	case "brew:shivammathur:install":
 		return c.GetShivammathurInstallTask()
 	case "apache:install":
@@ -137,5 +141,25 @@ func (c *Container) GetApacheStopTask() *task.ApacheStopTask {
 
 	instance := &task.ApacheStopTask{}
 	c.services["GetApacheStopTask"] = instance
+	return instance
+}
+
+func (c *Container) GetGenerateRootCaTask() *task.GenerateRootCaTask {
+	if service, ok := c.services["GetGenerateRootCaTask"]; ok {
+		return service.(*task.GenerateRootCaTask)
+	}
+
+	instance := &task.GenerateRootCaTask{Config: c.GetConfig()}
+	c.services["GetGenerateRootCaTask"] = instance
+	return instance
+}
+
+func (c *Container) GetGenerateHostsCaTask() *task.GenerateHostsCaTask {
+	if service, ok := c.services["GetGenerateHostsCaTask"]; ok {
+		return service.(*task.GenerateHostsCaTask)
+	}
+
+	instance := &task.GenerateHostsCaTask{Config: c.GetConfig()}
+	c.services["GetGenerateHostsCaTask"] = instance
 	return instance
 }

@@ -181,8 +181,8 @@ func writeSslConfig(filepath string, apache config.Apache) error {
 
 	data := map[string]any{
 		"SslPort":               apache.HttpsPort,
-		"SslCertificateFile":    apache.SslCertificateFile,
-		"SslCertificateKeyFile": apache.SslCertificateKeyFile,
+		"SslCertificateFile":    "/opt/homebrew/etc/httpd/ssl/localhost.dev.pem", // default cert
+		"SslCertificateKeyFile": "/opt/homebrew/etc/httpd/ssl/localhost.dev.key",
 	}
 
 	err = tmpl.Execute(buf, data)

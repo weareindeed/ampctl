@@ -9,6 +9,8 @@ func ProvisionCommand(container *Container) {
 
 	RunTaskAsRoot("root:privilege", container.GetConfig())
 	RunTask("brew:shivammathur:install", container.GetConfig())
+	RunTask("ssl:ca:generate", container.GetConfig())
+	RunTask("ssl:hosts:generate", container.GetConfig())
 	RunTask("apache:install", container.GetConfig())
 	RunTask("apache:config:write", container.GetConfig())
 	RunTask("apache:restart", container.GetConfig())

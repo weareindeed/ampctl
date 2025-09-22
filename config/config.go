@@ -28,11 +28,17 @@ func newPhp() Php {
 }
 
 type Apache struct {
-	Workspace             string `yaml:"workspace"`
-	HttpPort              string `yaml:"http_port"`
-	HttpsPort             string `yaml:"https_port"`
-	SslCertificateFile    string `yaml:"ssl_certificate_file"`
-	SslCertificateKeyFile string `yaml:"ssl_certificate_key_file"`
+	Workspace                      string `yaml:"workspace"`
+	HttpPort                       string `yaml:"http_port"`
+	HttpsPort                      string `yaml:"https_port"`
+	SslCertificateFile             string `yaml:"ssl_certificate_file"`
+	SslCertificateKeyFile          string `yaml:"ssl_certificate_key_file"`
+	SslCertificateCn               string `yaml:"ssl_certificate_cn"`
+	SslCertificateCountry          string `yaml:"ssl_certificate_county"`
+	SslCertificateLocality         string `yaml:"ssl_certificate_locality"`
+	SslCertificateOrganization     string `yaml:"ssl_certificate_organization"`
+	SslCertificateOrganizationUnit string `yaml:"ssl_certificate_organization_unit"`
+	SslCertificateProvince         string `yaml:"ssl_certificate_province"`
 }
 
 func newApache() Apache {
@@ -45,8 +51,8 @@ func newApache() Apache {
 		Workspace:             "/var/www",
 		HttpPort:              "80",
 		HttpsPort:             "443",
-		SslCertificateFile:    path.Join(home, ".ampctl/cert.crt"),
-		SslCertificateKeyFile: path.Join(home, ".ampctl/cert.key"),
+		SslCertificateFile:    path.Join(home, ".ampctl/CA.pem"),
+		SslCertificateKeyFile: path.Join(home, ".ampctl/CA.key"),
 	}
 }
 
