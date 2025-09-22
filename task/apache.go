@@ -7,6 +7,7 @@ import (
 	"embed"
 	"fmt"
 	"os"
+	"os/exec"
 	"text/template"
 )
 
@@ -53,7 +54,11 @@ func (t *ApacheConfigWriteTask) Run() error {
 		return fmt.Errorf("Error writing httpd-vhosts.conf")
 	}
 
-	return nil
+	fmt.Println("Test config")
+	cmd := exec.Command("/opt/homebrew/bin/apachectl", "configtest")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 type ApacheStartTask struct {
@@ -133,7 +138,7 @@ func writeConfig(filepath string, config config.Apache) error {
 		return err
 	}
 
-	err = setApacheConfig(filepath, "Listen", "8080")
+	err = setApacheConfig(filepath, "Listen", config.HttpPort)
 	if err != nil {
 		return err
 	}

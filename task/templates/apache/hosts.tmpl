@@ -27,7 +27,7 @@
   </FilesMatch>
 
   SSLEngine On
-  SSLCertificateFile /opt/local/var/ssl/{{.Host}}.pem
-  SSLCertificateKeyFile /opt/local/var/ssl/{{.Host}}.key
+  SSLCertificateFile /opt/homebrew/etc/httpd/ssl/{{.Host}}.pem
+  SSLCertificateKeyFile /opt/homebrew/etc/httpd/ssl/{{.Host}}.key
 </VirtualHost>
 {{ end }}

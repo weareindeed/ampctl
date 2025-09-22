@@ -23,7 +23,13 @@ func RunTask(name string, config *config.Config) {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Println("Error:", err)
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			status := exitErr.ExitCode()
+			fmt.Printf("Command failed with exit code %d", status)
+			os.Exit(1)
+			return
+		}
+		panic(err)
 	}
 }
 
@@ -41,7 +47,13 @@ func RunTaskAsRoot(name string, config *config.Config) {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Println("Error:", err)
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			status := exitErr.ExitCode()
+			fmt.Printf("Command failed with exit code %d", status)
+			os.Exit(1)
+			return
+		}
+		panic(err)
 	}
 }
 

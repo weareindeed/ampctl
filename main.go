@@ -63,5 +63,6 @@ func runTask(container *Container, taskName string) {
 	err := container.GetTask(taskName).Run()
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
 	}
 }
