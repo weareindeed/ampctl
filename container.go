@@ -47,6 +47,14 @@ func (c *Container) GetTask(name string) task.Task {
 		return c.GetHostsWriteTask()
 	case "php:install":
 		return c.GetPhpInstallTask()
+	case "php:start":
+		return c.GetPhpStartTask()
+	case "php:stop":
+		return c.GetPhpStopTask()
+	case "php:restart":
+		return c.GetPhpRestartTask()
+	case "php:config:write":
+		return c.GetPhpWriteConfigTask()
 	case "root:privilege":
 		return c.GetRootPrivilegeTask()
 	}
@@ -161,5 +169,45 @@ func (c *Container) GetGenerateHostsCaTask() *task.GenerateHostsCaTask {
 
 	instance := &task.GenerateHostsCaTask{Config: c.GetConfig()}
 	c.services["GetGenerateHostsCaTask"] = instance
+	return instance
+}
+
+func (c *Container) GetPhpWriteConfigTask() *task.PhpWriteConfigTask {
+	if service, ok := c.services["GetPhpWriteConfigTask"]; ok {
+		return service.(*task.PhpWriteConfigTask)
+	}
+
+	instance := &task.PhpWriteConfigTask{Config: c.GetConfig()}
+	c.services["GetPhpWriteConfigTask"] = instance
+	return instance
+}
+
+func (c *Container) GetPhpStartTask() *task.PhpStartTask {
+	if service, ok := c.services["GetPhpStartTask"]; ok {
+		return service.(*task.PhpStartTask)
+	}
+
+	instance := &task.PhpStartTask{Config: c.GetConfig()}
+	c.services["GetPhpStartTask"] = instance
+	return instance
+}
+
+func (c *Container) GetPhpRestartTask() *task.PhpRestartTask {
+	if service, ok := c.services["GetPhpRestartTask"]; ok {
+		return service.(*task.PhpRestartTask)
+	}
+
+	instance := &task.PhpRestartTask{Config: c.GetConfig()}
+	c.services["GetPhpRestartTask"] = instance
+	return instance
+}
+
+func (c *Container) GetPhpStopTask() *task.PhpStopTask {
+	if service, ok := c.services["GetPhpStopTask"]; ok {
+		return service.(*task.PhpStopTask)
+	}
+
+	instance := &task.PhpStopTask{Config: c.GetConfig()}
+	c.services["GetPhpStopTask"] = instance
 	return instance
 }

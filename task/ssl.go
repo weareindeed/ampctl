@@ -124,7 +124,7 @@ func (t *GenerateHostsCaTask) Run() error {
 	}
 
 	// default certificate
-	if err := t.createHostCertificate("localhost.dev"); err != nil {
+	if err := t.createHostCertificate("localhost"); err != nil {
 		return err
 	}
 

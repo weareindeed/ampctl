@@ -15,5 +15,7 @@ func ProvisionCommand(container *Container) {
 	RunTask("apache:config:write", container.GetConfig())
 	RunTask("apache:restart", container.GetConfig())
 	RunTask("php:install", container.GetConfig())
+	RunTask("php:config:write", container.GetConfig())
+	RunTask("php:restart", container.GetConfig())
 	RunTaskAsRoot("hosts:write", container.GetConfig())
 }
