@@ -101,6 +101,29 @@ func (t *PhpInstallTask) installSingleVersion(name string, version config.PhpVer
 		}
 	}
 
+	err := t.installPackage(name, "xdebug")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *PhpInstallTask) installPackage(version string, packageName string) error {
+	fullPackageName := fmt.Sprintf("shivammathur/extensions/%s@%s", packageName, version)
+
+	if util.IsPackageInstalled(fullPackageName) {
+		return nil
+	}
+
+	fmt.Print(fmt.Sprintf("Install Package %s: ", fullPackageName))
+
+	err := util.InstallPackage(fullPackageName)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
 	return nil
 }
 
@@ -228,7 +251,25 @@ func (t *PhpWriteConfigTask) writeFpmConfig(name string, version config.PhpVersi
 }
 
 func (t *PhpWriteConfigTask) writeIniConfig(name string, version config.PhpVersion) error {
-	//iniConf := path.Join("/opt/homebrew/etc/php", name, "php.ini")
+	iniConf := path.Join("/opt/homebrew/etc/php", name, "php.ini")
+
+	if util.Contains(name, []string{"7.0", "7.1"}) {
+		err := setPhpXdebug2Config(iniConf)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := setPhpXdebug3Config(iniConf)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := setPhpConfig(iniConf, "memory_limit", "2G")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -236,4 +277,23 @@ func setPhpConfig(filename string, key string, value string) error {
 	newLine := fmt.Sprintf("%s = %s", key, value)
 	regex := fmt.Sprintf("^;?%s\\s=.+$", key)
 	return util.LineInFile(filename, regex, newLine)
+}
+
+func setPhpXdebug2Config(filename string) error {
+	content := "[xdebug]\n" +
+		"xdebug.remote_enable = 1\n" +
+		"xdebug.remote_host = localhost\n" +
+		"xdebug.remote_port = 9000\n" +
+		"xdebug.remote_autostart = 1\n" +
+		"xdebug.max_nesting_level = 4096"
+	return util.BlockInFile(filename, content)
+}
+
+func setPhpXdebug3Config(filename string) error {
+	content := "[xdebug]\n" +
+		"xdebug.mode = debug,develop\n" +
+		"xdebug.client_host = localhost\n" +
+		"xdebug.client_port = 9000\n" +
+		"xdebug.max_nesting_level = 4096"
+	return util.BlockInFile(filename, content)
 }

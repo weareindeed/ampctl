@@ -70,3 +70,12 @@ func LineInFile(path string, regexpPattern string, line string) error {
 	}
 	return os.WriteFile(path, []byte(result), 0644)
 }
+
+func Contains(needle string, haystack []string) bool {
+	for _, v := range haystack {
+		if v == needle {
+			return true
+		}
+	}
+	return false
+}

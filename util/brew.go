@@ -53,12 +53,11 @@ func AddTap(tap string) error {
 // IsTapInstalled checks if a Homebrew tap is installed.
 func IsTapInstalled(tap string) bool {
 	cmd := exec.Command("brew", "tap")
-	output, err := cmd.CombinedOutput()
+	_, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return false
 	}
-	fmt.Println(string(output))
 	return true
 }
 
