@@ -4,6 +4,8 @@ import (
 	"ampctl/config"
 	"ampctl/util"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -82,6 +84,12 @@ func (t *PhpInstallTask) Run() error {
 			return err
 		}
 	}
+
+	err := t.installComposer(t.Config.Php.ComposerVersions)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -158,6 +166,97 @@ func (t *PhpInstallTask) installExecutables(version string, config config.PhpVer
 	err = os.Symlink(binPath, link)
 	if err != nil {
 		return err
+	}
+
+	// add version executable to homebrew bin
+	link = path.Join("/opt/homebrew/bin", "php"+version)
+
+	if _, err := os.Lstat(link); err == nil {
+		err = os.Remove(link)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = os.Symlink(binPath, link)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *PhpInstallTask) installComposer(versions []string) error {
+	if !util.IsPackageInstalled("composer") {
+		fmt.Printf("Install Composer")
+		err := util.InstallPackage("composer")
+		if err != nil {
+			return err
+		}
+	}
+
+	// additional versions
+	for _, version := range versions {
+		binPath := path.Join("/opt/homebrew/bin", "composer"+version)
+		if _, err := os.Stat(binPath); !os.IsNotExist(err) {
+			continue
+		}
+
+		fmt.Printf("Install Composer %s\n", version)
+
+		url := "https://github.com/composer/composer/releases/download/" + version + "/composer.phar"
+
+		// download and save to bin path
+		resp, err := http.Get(url)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			return fmt.Errorf("Failed to download composer %s: status %s", version, resp.Status)
+		}
+
+		out, err := os.Create(binPath)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			return err
+		}
+
+		// make it executable
+		err = os.Chmod(binPath, 0755)
+		if err != nil {
+			return err
+		}
+
+		// make symlink in php-bin
+		dir := path.Join("/opt/homebrew/php-bin", "composer"+version)
+
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err := os.MkdirAll(dir, 0755)
+			if err != nil {
+				return err
+			}
+		}
+
+		link := path.Join(dir, "composer")
+
+		if _, err := os.Lstat(link); err == nil {
+			err = os.Remove(link)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = os.Symlink(binPath, link)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

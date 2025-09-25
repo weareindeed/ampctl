@@ -17,10 +17,9 @@ type Host struct {
 }
 
 type Php struct {
-	Default   string                `yaml:"default"`
-	Composer1 string                `yaml:"composer1"`
-	Composer2 string                `yaml:"composer2"`
-	Versions  map[string]PhpVersion `yaml:"versions"`
+	Default          string                `yaml:"default"`
+	ComposerVersions []string              `yaml:"composer_versions"`
+	Versions         map[string]PhpVersion `yaml:"versions"`
 }
 
 func newPhp() Php {
@@ -61,9 +60,10 @@ type PhpVersion struct {
 }
 
 type Config struct {
-	Hosts  []Host `yaml:"hosts"`
-	Php    Php    `yaml:"php"`
-	Apache Apache `yaml:"apache"`
+	Hosts    []Host   `yaml:"hosts"`
+	Php      Php      `yaml:"php"`
+	Apache   Apache   `yaml:"apache"`
+	Database Database `yaml:"database"`
 }
 
 func NewConfig() *Config {
@@ -72,6 +72,15 @@ func NewConfig() *Config {
 		Php:    newPhp(),
 		Apache: newApache(),
 	}
+}
+
+type Database struct {
+	Versions map[string]DatabaseVersion `yaml:"versions"`
+}
+
+type DatabaseVersion struct {
+	Port    string `yaml:"port"`
+	Enabled bool   `yaml:"enabled"`
 }
 
 // ImportFile reads the hosts file from the given path
