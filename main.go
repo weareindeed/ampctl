@@ -48,9 +48,45 @@ func main() {
 		},
 	}
 
+	var deployCmd = &cobra.Command{
+		Use:   "deploy",
+		Short: "Write config and restart services",
+		Run: func(cmd *cobra.Command, args []string) {
+			DeployCommand(container)
+		},
+	}
+
+	var restartCmd = &cobra.Command{
+		Use:   "restart",
+		Short: "Restart services",
+		Run: func(cmd *cobra.Command, args []string) {
+			RestartCommand(container)
+		},
+	}
+
+	var stopCmd = &cobra.Command{
+		Use:   "stop",
+		Short: "Stop services",
+		Run: func(cmd *cobra.Command, args []string) {
+			StopCommand(container)
+		},
+	}
+
+	var startCmd = &cobra.Command{
+		Use:   "start",
+		Short: "Start services",
+		Run: func(cmd *cobra.Command, args []string) {
+			StartCommand(container)
+		},
+	}
+
 	rootCmd.AddCommand(
 		checkCmd,
 		provisionCmd,
+		deployCmd,
+		restartCmd,
+		startCmd,
+		stopCmd,
 	)
 
 	err = rootCmd.Execute()
