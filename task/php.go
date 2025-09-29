@@ -369,6 +369,11 @@ func (t *PhpWriteConfigTask) writeIniConfig(name string, version config.PhpVersi
 		return err
 	}
 
+	err = setPhpConfig(iniConf, "error_reporting", "E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

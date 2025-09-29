@@ -57,6 +57,14 @@ func (c *Container) GetTask(name string) task.Task {
 		return c.GetPhpWriteConfigTask()
 	case "root:privilege":
 		return c.GetRootPrivilegeTask()
+	case "database:install":
+		return c.GetDatabaseInstallTask()
+	case "database:start":
+		return c.GetDatabaseStartTask()
+	case "database:stop":
+		return c.GetDatabaseStopTask()
+	case "database:restart":
+		return c.GetDatabaseRestartTask()
 	}
 
 	panic("Task not found")
@@ -209,5 +217,45 @@ func (c *Container) GetPhpStopTask() *task.PhpStopTask {
 
 	instance := &task.PhpStopTask{Config: c.GetConfig()}
 	c.services["GetPhpStopTask"] = instance
+	return instance
+}
+
+func (c *Container) GetDatabaseInstallTask() *task.DatabaseInstallTask {
+	if service, ok := c.services["GetDatabaseInstallTask"]; ok {
+		return service.(*task.DatabaseInstallTask)
+	}
+
+	instance := &task.DatabaseInstallTask{Config: c.GetConfig()}
+	c.services["GetDatabaseInstallTask"] = instance
+	return instance
+}
+
+func (c *Container) GetDatabaseStartTask() *task.DatabaseStartTask {
+	if service, ok := c.services["GetDatabaseStartTask"]; ok {
+		return service.(*task.DatabaseStartTask)
+	}
+
+	instance := &task.DatabaseStartTask{Config: c.GetConfig()}
+	c.services["GetDatabaseStartTask"] = instance
+	return instance
+}
+
+func (c *Container) GetDatabaseRestartTask() *task.DatabaseRestartTask {
+	if service, ok := c.services["GetDatabaseRestartTask"]; ok {
+		return service.(*task.DatabaseRestartTask)
+	}
+
+	instance := &task.DatabaseRestartTask{Config: c.GetConfig()}
+	c.services["GetDatabaseRestartTask"] = instance
+	return instance
+}
+
+func (c *Container) GetDatabaseStopTask() *task.DatabaseStopTask {
+	if service, ok := c.services["GetDatabaseStopTask"]; ok {
+		return service.(*task.DatabaseStopTask)
+	}
+
+	instance := &task.DatabaseStopTask{Config: c.GetConfig()}
+	c.services["GetDatabaseStopTask"] = instance
 	return instance
 }

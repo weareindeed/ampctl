@@ -79,8 +79,17 @@ type Database struct {
 }
 
 type DatabaseVersion struct {
-	Port    string `yaml:"port"`
-	Enabled bool   `yaml:"enabled"`
+	Port       string `yaml:"port"`
+	Enabled    bool   `yaml:"enabled"`
+	DataDir    string `yaml:"data_dir"`
+	GeneralLog bool   `yaml:"general_log"`
+}
+
+func NewDatabaseVersion() *DatabaseVersion {
+	return &DatabaseVersion{
+		Enabled:    true,
+		GeneralLog: false,
+	}
 }
 
 // ImportFile reads the hosts file from the given path
