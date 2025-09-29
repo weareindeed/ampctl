@@ -59,6 +59,8 @@ func (c *Container) GetTask(name string) task.Task {
 		return c.GetRootPrivilegeTask()
 	case "database:install":
 		return c.GetDatabaseInstallTask()
+	case "database:config:write":
+		return c.GetDatabaseWriteConfigTask()
 	case "database:start":
 		return c.GetDatabaseStartTask()
 	case "database:stop":
@@ -227,6 +229,16 @@ func (c *Container) GetDatabaseInstallTask() *task.DatabaseInstallTask {
 
 	instance := &task.DatabaseInstallTask{Config: c.GetConfig()}
 	c.services["GetDatabaseInstallTask"] = instance
+	return instance
+}
+
+func (c *Container) GetDatabaseWriteConfigTask() *task.DatabaseConfigWriteTask {
+	if service, ok := c.services["GetDatabaseWriteConfigTask"]; ok {
+		return service.(*task.DatabaseConfigWriteTask)
+	}
+
+	instance := &task.DatabaseConfigWriteTask{Config: c.GetConfig()}
+	c.services["GetDatabaseWriteConfigTask"] = instance
 	return instance
 }
 

@@ -7,6 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
+	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v3 v3.0.1
 	howett.net/plist v1.0.1
 )
