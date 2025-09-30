@@ -11,6 +11,7 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"sync"
 )
 
 type PhpStartTask struct {
@@ -18,14 +19,22 @@ type PhpStartTask struct {
 }
 
 func (t *PhpStartTask) Run() error {
+	var wg sync.WaitGroup
 	versions := getPhpVersions(t.Config.Php.Versions)
 	for _, version := range versions {
-		err := util.BrewStartService("php@" + version)
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go t.runner(version, &wg)
 	}
+	wg.Wait()
 	return nil
+}
+
+func (t *PhpStartTask) runner(version string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	err := util.BrewStartService("php@" + version)
+	if err != nil {
+		panic(err)
+	}
 }
 
 type PhpRestartTask struct {
@@ -33,14 +42,22 @@ type PhpRestartTask struct {
 }
 
 func (t *PhpRestartTask) Run() error {
+	var wg sync.WaitGroup
 	versions := getPhpVersions(t.Config.Php.Versions)
 	for _, version := range versions {
-		err := util.BrewRestartService("php@" + version)
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go t.runner(version, &wg)
 	}
+	wg.Wait()
 	return nil
+}
+
+func (t *PhpRestartTask) runner(version string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	err := util.BrewRestartService("php@" + version)
+	if err != nil {
+		panic(err)
+	}
 }
 
 type PhpStopTask struct {
@@ -48,14 +65,22 @@ type PhpStopTask struct {
 }
 
 func (t *PhpStopTask) Run() error {
+	var wg sync.WaitGroup
 	versions := getPhpVersions(t.Config.Php.Versions)
 	for _, version := range versions {
-		err := util.BrewStopService("php@" + version)
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go t.runner(version, &wg)
 	}
+	wg.Wait()
 	return nil
+}
+
+func (t *PhpStopTask) runner(version string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	err := util.BrewStopService("php@" + version)
+	if err != nil {
+		panic(err)
+	}
 }
 
 type PhpInstallTask struct {
